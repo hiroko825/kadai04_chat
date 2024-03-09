@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>なかなか話せないことを話してみるアプリ</title>
+    <header class="header-container">
+      <div class="header-text">今日もお疲れさま。
+      <br>今日のできごと、ちょっと話しましょ👼
+      </div>
+    </header>
+
+  <body>
+    <!-- コンテンツ表示画面 -->
+    <div class="container">
+      <div id="output" class="chat-container"></div>
+      <div class="input-container">
+        <div><input type="text" id="uname" style="opacity: 0.7; width: 100%; border: none; outline: none; padding: 10px; box-sizing: border-box; border-radius: 15px; border: 1px solid #ccc; background-color: white;" placeholder="YOUR NAME">
+        </div>
+          <textarea id="text" cols="30" rows="10" style="opacity: 0.7; width: 100%; border: none; outline: none; padding: 10px; box-sizing: border-box; border-radius: 15px; border: 1px solid #ccc; background-color: white;" placeholder="MESSAGE"></textarea>
+          <button id="send">SEND</button>
+        </div>
+      </div>
+    </div>
+    <!--/ コンテンツ表示画面 -->
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- JQuery -->
+
+    <!--** 以下Firebase **-->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        set,
+        update,
+        remove,
+        onChildAdded,
+        onChildChanged,
+        onChildRemoved,
+      } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyDqIKY4USY7pRzOHWnjFNSaWmCGYaTTMkE",
+        authDomain: "sample-hiroko.firebaseapp.com",
+        projectId: "sample-hiroko",
+        storageBucket: "sample-hiroko.appspot.com",
+        messagingSenderId: "232829647382",
+        appId: "1:232829647382:web:4e8e003a43e8c07c5a9337",
+        measurementId: "G-9WWYH8DE05",
+      };
+
+      // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db, "chat");
+
+        $("#send").on("click", function () {
+          const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val(),
+          };
+          const newPostRef = push(dbRef);
+          set(newPostRef, msg);
+          $("#text").val("").blur();
+        });
+
+        onChildAdded(dbRef, function (data) {
+          const msg = data.val();
+          const key = data.key;
+          let h = '<div class="message-container" id="' + key + '">';
+          h += '<div class="name">' + msg.uname + '</div>';
+          h += '<div class="comment">' + msg.text + '</div>';
+          h += '<div class="datetime">' + formatDatetime(new Date()) + '</div>';
+          h += '</div>';
+          $("#output").prepend(h);
+        });
+
+        onChildChanged(dbRef, function (data) {
+          const msg = data.val();
+          const key = data.key;
+          $("#" + key + " .comment").text(msg.text);
+        });
+
+        onChildRemoved(dbRef, function (data) {
+          const key = data.key;
+          $("#" + key).remove();
+        });
+
+        function formatDatetime(date) {
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const day = date.getDate().toString().padStart(2, '0');
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          const seconds = date.getSeconds().toString().padStart(2, '0');
+          return year + '/' + month + '/' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+        }
+    </script>
+  </body>
+</html>
