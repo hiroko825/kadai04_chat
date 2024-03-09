@@ -135,7 +135,7 @@ body {
   }
   
   /* レスポンシブ対応 */
-  @media (max-width: 600px) {
+  @media (max-width: 2000px) {
     .input-container,
     .chat-container {
       width: 100%;
